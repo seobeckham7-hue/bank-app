@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>우리 WON 뱅킹 시뮬레이터</title>
+    
+    <link rel="apple-touch-icon" href="icon.png?v=1">
+    <link rel="icon" href="icon.png?v=1">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="우리WON">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wonBlue: '#0043A8',
+                        wonLightBlue: '#00B1EB',
+                        wonBg: '#F3F6FA',
+                        wonText: '#1A1A1A',
+                        wonGray: '#8E8E93',
+                        wonCardBg: '#E9F1FC',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+            background-color: #000;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #00B1EB;
+        }
+        .toggle-checkbox:checked + .toggle-label .toggle-dot {
+            transform: translateX(100%);
+        }
+
+        .phone-container {
+            max-width: 430px;
+            height: 100vh;
+            margin: 0 auto;
+            position: relative;
+            background-color: #F3F6FA;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .safe-top {
+            padding-top: env(safe-area-inset-top, 47px);
+        }
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 34px);
+        }
+
+        .dynamic-island-container {
+            position: absolute;
+            top: 10.5px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            height: 170px;
+        }
+
+        .cubic-bezier-spring {
+            transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.05);
+        }
+
+        .perspective-1000 { 
+            perspective: 1000px;
+        }
+        
+        .transform-style-3d { 
+            transform-style: preserve-3d;
+            will-change: transform; 
+        }
+        
+        .delay-0 { animation-delay: 0s; }
+        .delay-1 { animation-delay: -0.05s; }
+        .delay-2 { animation-delay: -0.10s; }
+        
+        @keyframes smooth-spin-1 {
+            0% { transform: rotate3d(1, 1, 0.5, 0deg); }
+            100% { transform: rotate3d(1, 1, 0.5, 360deg); }
+        }
+
+        @keyframes smooth-spin-2 {
+            0% { transform: rotate3d(1.2, -0.6, 0.8, 0deg); }
+            100% { transform: rotate3d(1.2, -0.6, 0.8, 360deg); }
+        }
+
+        @keyframes smooth-spin-3 {
+            0% { transform: rotate3d(-0.5, 0.8, -1, 0deg); }
+            100% { transform: rotate3d(-0.5, 0.8, -1, 360deg); }
+        }
+        
+        .animate-smooth-spin-1 { animation: smooth-spin-1 0.9s linear infinite; }
+        .animate-smooth-spin-2 { animation: smooth-spin-2 0.9s linear infinite; }
+        .animate-smooth-spin-3 { animation: smooth-spin-3 0.9s linear infinite; }
+
+        @keyframes success-bounce {
+            0% { transform: scale(0.88); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        .animate-success-bounce {
+            animation: success-bounce 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
+        }
+
+        @keyframes draw-mark {
+            0% { stroke-dashoffset: 40; }
+            100% { stroke-dashoffset: 0; }
+        }
+        .draw-checkmark {
+            stroke-dasharray: 40;
+            stroke-dashoffset: 40;
+            animation: draw-mark 0.3s ease-out forwards;
+            animation-delay: 0.1s;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div class="phone-container w-full">
+        
+        <div class="dynamic-island-container">
+            <div 
+                id="dynamic-island" 
+                class="bg-black flex flex-col items-center justify-center overflow-hidden border border-zinc-900/60 shadow-xl transition-all duration-500 cubic-bezier-spring rounded-[22px] w-[120px] h-[30px]"
+            >
+                <div class="relative w-full h-full flex items-center justify-center">
+                    
+                    <div 
+                        id="status-scanning" 
+                        class="absolute w-24 h-24 flex items-center justify-center perspective-1000 transition-all duration-500 ease-out opacity-0 scale-75 pointer-events-none"
+                    >
+                        <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D] rounded-full animate-smooth-spin-1 transform-style-3d delay-0"></div>
+                        <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D]/60 rounded-full animate-smooth-spin-1 transform-style-3d delay-1"></div>
+                        <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D]/20 rounded-full animate-smooth-spin-1 transform-style-3d delay-2"></div>
+
+                        <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D] rounded-full animate-smooth-spin-2 transform-style-3d delay-0"></div>
+                        <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D]/60 rounded-full animate-smooth-spin-2 transform-style-3d delay-1"></div>
+                        <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D]/20 rounded-full animate-smooth-spin-2 transform-style-3d delay-2"></div>
+
+                        <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D] rounded-full animate-smooth-spin-3 transform-style-3d delay-0"></div>
+                        <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D]/60 rounded-full animate-smooth-spin-3 transform-style-3d delay-1"></div>
+                        <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D]/20 rounded-full animate-smooth-spin-3 transform-style-3d delay-2"></div>
+                    </div>
+
+                    <div 
+                        id="status-success" 
+                        class="absolute w-24 h-24 flex items-center justify-center transition-all duration-400 ease-out opacity-0 scale-75 pointer-events-none"
+                    >
+                        <div class="w-14 h-14 border-[3.8px] border-[#8CEE9D] rounded-full flex items-center justify-center bg-[#8CEE9D]/5 shadow-[0_0_15px_rgba(140,238,157,0.2)]">
+                            <svg class="w-6 h-6 text-[#8CEE9D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path id="checkmark-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="splash-screen" class="absolute inset-0 bg-white z-40 flex flex-col justify-between items-center py-20 transition-all duration-500">
+            <div></div>
+            <div id="splash-logo" class="flex flex-col items-center transition-all duration-500 transform scale-100 opacity-100">
+                <div class="relative w-28 h-16 mb-4">
+                    <div class="absolute left-0 top-0 w-16 h-16 rounded-full bg-wonLightBlue opacity-70"></div>
+                    <div class="absolute right-0 top-0 w-16 h-16 rounded-full bg-wonBlue"></div>
+                </div>
+                <div class="text-wonBlue font-black text-4xl tracking-wider mt-2">WON</div>
+            </div>
+            
+            <div id="splash-footer" class="flex flex-col items-center space-y-6 transition-opacity duration-300 opacity-100">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-[#D12B26] text-white px-2.5 py-1 text-center rounded-sm" style="font-family: Arial, sans-serif;">
+                        <div class="text-xs font-black tracking-tighter leading-none">iF</div>
+                        <div class="text-[6px] font-bold tracking-tight">DESIGN</div>
+                        <div class="text-[6px] font-bold tracking-tight">AWARD</div>
+                        <div class="text-[6px] font-bold tracking-tight">2026</div>
+                    </div>
+                    <div class="border border-wonBlue text-wonBlue p-1 rounded flex items-center space-x-1">
+                        <span class="text-xs font-extrabold px-1 bg-wonBlue text-white rounded-sm">MA</span>
+                        <div class="flex flex-col text-[6px] font-bold leading-none">
+                            <span>Mobile Accessibility</span>
+                            <span>모바일 접근성 인증</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-wonBlue font-bold text-lg tracking-widest mt-2">우리은행</div>
+            </div>
+        </div>
+
+        <div id="main-screen" class="hidden flex-col h-full w-full">
+            <div class="safe-top bg-wonBg"></div>
+            <header class="px-5 py-3 flex justify-between items-center bg-wonBg">
+                <div class="flex bg-gray-200 p-0.5 rounded-full text-xs font-bold w-32 shadow-inner">
+                    <button class="flex-1 py-1.5 rounded-full bg-white text-gray-800 text-center shadow-sm">일반홈</button>
+                    <button class="flex-1 py-1.5 rounded-full text-gray-500 text-center">쉬운</button>
+                </div>
+                <div class="flex items-center space-x-4 text-gray-700">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-gray-100 shadow-sm cursor-pointer">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    </div>
+                    <div class="relative cursor-pointer">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </div>
+                    <div class="cursor-pointer">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto px-5 space-y-4 no-scrollbar pb-24">
+                <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-4 flex justify-between items-center relative overflow-hidden shadow-sm border border-pink-100">
+                    <div class="z-10">
+                        <p class="text-[11px] text-pink-500 font-bold mb-1">🎁 생일 축하 이벤트</p>
+                        <h4 class="text-sm font-bold text-gray-800 leading-snug">TO. 6월 생일 고객님<br>선물을 골라주세요!</h4>
+                    </div>
+                    <div class="flex space-x-1 items-end z-10">
+                        <span class="text-3xl">🎈</span>
+                        <span class="text-4xl">🦖</span>
+                        <span class="text-3xl">🎈</span>
+                    </div>
+                    <div class="absolute right-2 top-2 text-gray-300 font-bold text-xs opacity-40 cursor-pointer">✕</div>
+                </div>
+
+                <div class="bg-wonCardBg/40 border border-wonCardBg rounded-2xl p-4 relative">
+                    <p class="text-xs text-wonBlue font-bold mb-1">청약 계좌도 홈에서 바로 확인해 보세요!</p>
+                    <p class="text-[11px] text-gray-500 mb-3">자주 쓰는 계좌를 추가하면 더 편해요.</p>
+                    <div class="bg-white rounded-xl p-3 flex justify-between items-center shadow-sm">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-full bg-wonBlue flex items-center justify-center text-white font-extrabold text-sm">청</div>
+                            <div>
+                                <h5 class="text-xs font-bold text-gray-800">주택청약종합저축</h5>
+                                <p class="text-[10px] text-gray-400">1073-319-368950</p>
+                            </div>
+                        </div>
+                        <button class="bg-wonBlue text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center space-x-1 shadow-sm">
+                            <span>+ 홈에 추가</span>
+                        </button>
+                    </div>
+                    <div class="absolute right-3 top-3 text-gray-300 font-bold text-xs opacity-70 cursor-pointer">✕</div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 relative">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-wonBlue to-wonLightBlue flex items-center justify-center text-white font-black text-[10px]">WON</div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-800">WON 통장</h4>
+                                <div class="flex items-center space-x-1">
+                                    <span class="text-[11px] text-gray-500">우리 1002-758-863813</span>
+                                    <svg class="w-3 h-3 text-gray-400 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="text-gray-400">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
+                        </button>
+                    </div>
+
+                    <div class="my-5 cursor-pointer group" onclick="goToHistory()">
+                        <div class="text-3xl font-black text-gray-900 group-hover:text-wonBlue transition-colors" id="main-balance-text">
+                            0원
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button class="border border-gray-200 text-gray-700 text-xs font-bold px-4 py-2 rounded-xl bg-gray-50/50 hover:bg-gray-100 transition shadow-sm" onclick="goToHistory()">
+                            이체
+                        </button>
+                    </div>
+                </div>
+
+                <button class="w-full bg-white border border-gray-200 text-gray-700 text-sm font-bold py-3.5 rounded-xl hover:bg-gray-50 transition shadow-sm" onclick="goToHistory()">
+                    전체계좌보기
+                </button>
+
+                <div class="bg-[#F6F9F5] rounded-2xl p-4 flex justify-between items-center border border-emerald-100 shadow-sm">
+                    <div>
+                        <h5 class="text-sm font-bold text-gray-800">내 신용점수, 몇 점인가요?</h5>
+                        <p class="text-xs text-gray-500 mt-1">마이데이터로 바로 확인하고<br>신용점수 올리기까지!</p>
+                    </div>
+                    <div class="relative w-16 h-16">
+                        <svg viewBox="0 0 36 36" class="w-16 h-16 text-emerald-500">
+                            <path class="text-gray-200" stroke-width="4" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="text-emerald-500" stroke-dasharray="75, 100" stroke-width="4" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831" />
+                        </svg>
+                        <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-emerald-600">✓</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 flex justify-around items-center py-2.5 pb-6 text-[10px] text-gray-400 font-bold z-20">
+                <div class="flex flex-col items-center space-y-1 cursor-pointer">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span>상품</span>
+                </div>
+                <div class="flex flex-col items-center space-y-1 cursor-pointer">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z"></path></svg>
+                    <span>자산·소비</span>
+                </div>
+                <div class="flex flex-col items-center space-y-1 cursor-pointer text-wonBlue">
+                    <svg class="w-6 h-6 text-wonBlue" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                    <span>홈</span>
+                </div>
+                <div class="flex flex-col items-center space-y-1 cursor-pointer">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    <span>주식</span>
+                </div>
+                <div class="flex flex-col items-center space-y-1 cursor-pointer">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>혜택</span>
+                </div>
+            </nav>
+        </div>
+
+        <div id="history-screen" class="hidden flex-col h-full w-full bg-white">
+            <div class="safe-top bg-white"></div>
+            <header class="px-5 py-3 flex justify-between items-center bg-white">
+                <button class="text-gray-800 focus:outline-none" onclick="goToMain()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h3 class="text-base font-bold text-gray-800">거래내역조회</h3>
+                <button class="text-wonBlue text-sm font-bold" onclick="openAddModal()">관리</button>
+            </header>
+
+            <div class="px-5 py-4 bg-white flex flex-col border-b border-gray-50">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-wonBlue to-wonLightBlue flex items-center justify-center text-white font-black text-xs">WON</div>
+                        <div>
+                            <div class="flex items-center space-x-1">
+                                <h4 class="text-[17px] font-extrabold text-gray-800">WON 통장</h4>
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <div class="flex items-center space-x-1 mt-0.5">
+                                <span class="text-xs text-gray-400">우리 1002-758-863813</span>
+                                <svg class="w-3 h-3 text-gray-300 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-right mt-2 mb-4">
+                    <div class="text-3xl font-extrabold text-gray-950 tracking-tight" id="detail-balance-text">0원</div>
+                    <div class="text-[11px] text-gray-400 font-semibold mt-1">출금가능금액 <span id="detail-available-text">0원</span></div>
+                </div>
+
+                <div class="flex space-x-2.5">
+                    <button class="flex-1 py-3 bg-[#EBF3FC] text-wonBlue font-bold text-sm rounded-xl hover:bg-blue-100 transition">모으기</button>
+                    <button class="flex-1 py-3 bg-[#3882F6] text-white font-bold text-sm rounded-xl hover:bg-blue-600 transition shadow-sm">이체</button>
+                </div>
+            </div>
+
+            <div class="px-5 py-3.5 space-y-3 bg-white border-b border-gray-100">
+                <div class="flex justify-between items-center text-sm">
+                    <div class="flex items-center space-x-1.5 text-gray-500 font-bold">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="filter-date-input" class="bg-transparent border-b border-dashed border-gray-400 focus:border-wonBlue focus:outline-none font-bold text-gray-700 w-44 text-center pb-0.5" value="2026.04.01 ~ 2026.06.25" onchange="saveDateFilter()">
+                        <span class="text-xs text-gray-400 font-semibold">· 조회기간 · 전체</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <span class="text-[11px] text-gray-500 font-bold">잔액 표시</span>
+                        <div class="relative inline-block w-8 mr-1 align-middle select-none">
+                            <input type="checkbox" name="toggle" id="balance-toggle" checked onchange="toggleBalanceDisplay()" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 border-gray-300 appearance-none cursor-pointer focus:outline-none"/>
+                            <label for="balance-toggle" class="toggle-label block overflow-hidden h-4 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto px-5 divide-y divide-gray-100 no-scrollbar pb-10" id="transaction-list-container"></div>
+            
+            <div class="p-3 bg-gray-50 text-center text-[10px] text-gray-400 border-t border-gray-100">
+                💡 내역을 터치하면 금액, 거래처, 잔액을 임의 조작하거나 삭제할 수 있습니다.
+            </div>
+        </div>
+
+    </div>
+
+    <div id="editor-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center p-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-[430px] rounded-t-3xl p-6 space-y-4 shadow-2xl transform translate-y-full transition-transform duration-300">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-100">
+                <h4 class="text-base font-black text-gray-800" id="modal-title">거래 내역 수정</h4>
+                <button class="text-gray-400 hover:text-gray-600 font-bold text-lg" onclick="closeEditorModal()">✕</button>
+            </div>
+            <input type="hidden" id="edit-index" value="">
+            <div class="space-y-3 text-sm">
+                <div class="flex space-x-2">
+                    <button id="btn-type-expense" class="flex-1 py-2 rounded-xl border font-bold text-center transition" onclick="setModalType('expense')">출금(-)</button>
+                    <button id="btn-type-income" class="flex-1 py-2 rounded-xl border font-bold text-center transition" onclick="setModalType('income')">입금(+)</button>
+                </div>
+                <input type="hidden" id="edit-type" value="expense">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">거래처명</label>
+                    <input type="text" id="edit-title" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:border-wonBlue focus:outline-none" placeholder="예: 우리카드결제대금">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">거래 일시 (월 일 시간)</label>
+                    <input type="text" id="edit-date" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:border-wonBlue focus:outline-none" placeholder="예: 6월 15일 · 16:38:22">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">거래 금액</label>
+                    <input type="number" id="edit-amount" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:border-wonBlue focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">거래 후 잔액</label>
+                    <input type="number" id="edit-balance" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:border-wonBlue focus:outline-none">
+                </div>
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button id="btn-delete" class="bg-rose-50 text-rose-600 font-bold px-4 py-3 rounded-xl border border-rose-100" onclick="deleteTransaction()">삭제</button>
+                <button class="flex-1 bg-wonBlue text-white font-bold py-3 rounded-xl shadow-sm" onclick="saveTransaction()">변경 사항 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alert-modal" class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center p-6">
+        <div class="bg-white rounded-2xl w-full max-w-xs p-5 space-y-4 text-center shadow-2xl">
+            <h5 class="font-extrabold text-gray-800 text-base" id="alert-title">알림</h5>
+            <p class="text-sm text-gray-500 leading-relaxed" id="alert-message">메시지 내용</p>
+            <button class="w-full bg-wonBlue text-white font-bold py-2.5 rounded-xl text-sm" onclick="closeAlert()">확인</button>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center p-6">
+        <div class="bg-white rounded-2xl w-full max-w-xs p-5 space-y-4 text-center shadow-2xl">
+            <h5 class="font-extrabold text-gray-800 text-base" id="confirm-title">확인</h5>
+            <p class="text-sm text-gray-500 leading-relaxed" id="confirm-message">진행하시겠습니까?</p>
+            <div class="flex space-x-2">
+                <button class="flex-1 bg-gray-100 text-gray-500 font-bold py-2.5 rounded-xl text-sm" onclick="resolveConfirm(false)">취소</button>
+                <button class="flex-1 bg-wonBlue text-white font-bold py-2.5 rounded-xl text-sm" onclick="resolveConfirm(true)">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 💡 6월 25일 3,000,000원 기준으로 역산하여 1원도 틀리지 않게 완벽하게 세팅된 현실적인 내역
+        const defaultTransactions = [
+            { id: 1, dateGroup: "6월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -600000, balance: 3000000 },
+            { id: 2, dateGroup: "6월 24일", time: "19:05:41", title: "배달의민족", amount: -27000, balance: 3600000 },
+            { id: 3, dateGroup: "6월 22일", time: "08:15:33", title: "GS25 부산서면", amount: -4800, balance: 3627000 },
+            { id: 4, dateGroup: "6월 19일", time: "23:45:10", title: "해외 MANCITY", amount: -120000, balance: 3631800 },
+            { id: 5, dateGroup: "6월 15일", time: "18:05:22", title: "우리카드결제대금", amount: -1150000, balance: 3751800 },
+            { id: 6, dateGroup: "6월 11일", time: "21:10:05", title: "마켓컬리", amount: -54000, balance: 4901800 },
+            { id: 7, dateGroup: "6월 08일", time: "12:40:11", title: "스타벅스", amount: -9000, balance: 4955800 },
+            { id: 8, dateGroup: "6월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 4964800 },
+            { id: 9, dateGroup: "6월 02일", time: "14:30:20", title: "온누리약국", amount: -8500, balance: 1180590 },
+            { id: 10, dateGroup: "5월 28일", time: "10:15:00", title: "삼성증권(대체)", amount: -3000000, balance: 1189090 },
+            { id: 11, dateGroup: "5월 24일", time: "23:05:40", title: "카카오T", amount: -12400, balance: 4189090 },
+            { id: 12, dateGroup: "5월 20일", time: "19:22:15", title: "올리브영", amount: -32000, balance: 4201490 },
+            { id: 13, dateGroup: "5월 15일", time: "18:10:00", title: "우리카드결제대금", amount: -920000, balance: 4233490 },
+            { id: 14, dateGroup: "5월 10일", time: "18:50:30", title: "배달의민족", amount: -24000, balance: 5153490 },
+            { id: 15, dateGroup: "5월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 5177490 },
+            { id: 16, dateGroup: "5월 02일", time: "08:45:12", title: "GS25 부산서면", amount: -5200, balance: 1393280 },
+            { id: 17, dateGroup: "4월 28일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 1398480 },
+            { id: 18, dateGroup: "4월 25일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 1483480 },
+            { id: 19, dateGroup: "4월 22일", time: "13:40:00", title: "토스증권(투자)", amount: -2000000, balance: 1498480 },
+            { id: 20, dateGroup: "4월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 3498480 },
+            { id: 21, dateGroup: "4월 15일", time: "18:05:10", title: "우리카드결제대금", amount: -850000, balance: 3531480 },
+            { id: 22, dateGroup: "4월 12일", time: "14:20:05", title: "해외 iHerb", amount: -65400, balance: 4381480 },
+            { id: 23, dateGroup: "4월 09일", time: "19:15:22", title: "돼지국밥", amount: -28000, balance: 4446880 },
+            { id: 24, dateGroup: "4월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 4474880 },
+            { id: 25, dateGroup: "4월 02일", time: "12:30:15", title: "스타벅스 부산역점", amount: -4500, balance: 690670 },
+            { id: 26, dateGroup: "4월 01일", time: "10:00:00", title: "초기잔액이관", amount: 0, balance: 695170 }
+        ];
+        
+        let transactions = [];
+        let showBalance = true;
+        let confirmPromiseResolver = null;
+
+        let isRunning = false;
+        let timeouts = [];
+        function clearAllTimeouts() {
+            timeouts.forEach(t => clearTimeout(t));
+            timeouts = [];
+        }
+
+        function startFaceIDSequence() {
+            if (isRunning) return;
+            isRunning = true;
+            clearAllTimeouts();
+
+            const island = document.getElementById('dynamic-island');
+            const viewScanning = document.getElementById('status-scanning');
+            const viewSuccess = document.getElementById('status-success');
+            const checkmarkPath = document.getElementById('checkmark-path');
+            
+            island.classList.remove('w-[130px]', 'h-[130px]', 'opacity-0', 'scale-y-0', 'pointer-events-none');
+            island.classList.add('w-[120px]', 'h-[30px]');
+            viewScanning.className = "absolute w-24 h-24 flex items-center justify-center perspective-1000 transition-all duration-500 ease-out opacity-0 scale-75 pointer-events-none";
+            viewSuccess.className = "absolute w-24 h-24 flex items-center justify-center transition-all duration-400 ease-out opacity-0 scale-75 pointer-events-none";
+            checkmarkPath.classList.remove('draw-checkmark');
+            
+            island.classList.remove('w-[120px]', 'h-[30px]');
+            island.classList.add('w-[130px]', 'h-[130px]');
+
+            let t1 = setTimeout(() => {
+                viewScanning.classList.remove('opacity-0', 'scale-75', 'pointer-events-none');
+                viewScanning.classList.add('opacity-100', 'scale-100');
+            }, 250);
+            timeouts.push(t1);
+
+            let t2 = setTimeout(() => {
+                viewScanning.classList.remove('opacity-100', 'scale-100');
+                viewScanning.classList.add('opacity-0', 'scale-75', 'pointer-events-none');
+
+                viewSuccess.classList.remove('opacity-100', 'scale-100', 'animate-success-bounce');
+                viewSuccess.classList.add('opacity-100', 'scale-100', 'animate-success-bounce');
+                 
+                checkmarkPath.classList.add('draw-checkmark');
+            }, 1750);
+            timeouts.push(t2);
+
+            let t3 = setTimeout(() => {
+                viewSuccess.classList.remove('opacity-100', 'scale-100', 'animate-success-bounce');
+                viewSuccess.classList.add('opacity-0', 'scale-75', 'pointer-events-none');
+                checkmarkPath.classList.remove('draw-checkmark');
+
+                island.classList.remove('w-[130px]', 'h-[120px]');
+                island.classList.add('w-[100px]', 'h-[0px]', 'opacity-0', 'pointer-events-none');
+
+                const splash = document.getElementById('splash-screen');
+                splash.classList.add('opacity-0');
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    document.getElementById('main-screen').classList.remove('hidden');
+                    document.getElementById('main-screen').classList.add('flex');
+                    updateMainDashboard();
+                }, 400);
+            }, 2750);
+            timeouts.push(t3);
+
+            let t4 = setTimeout(() => {
+                isRunning = false;
+            }, 3250);
+            timeouts.push(t4);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // 💡 _v2 키를 사용하여 브라우저가 예전 잔액을 기억하지 못하게 새 내역으로 강제 덮어씁니다.
+            const storedData = localStorage.getItem('won_banking_transactions_v2');
+            const cachedDateFilter = localStorage.getItem('won_banking_date_filter');
+            
+            let forceReload = true;
+            if (storedData) {
+                const parsed = JSON.parse(storedData);
+                const hasNoNegative = parsed.some(tx => tx.balance >= 0);
+                if (hasNoNegative) {
+                    transactions = parsed;
+                    forceReload = false;
+                }
+            }
+
+            if (forceReload) {
+                transactions = [...defaultTransactions];
+                saveToLocalStorage();
+            }
+
+            if (cachedDateFilter) {
+                document.getElementById('filter-date-input').value = cachedDateFilter;
+            }
+
+            renderTransactions();
+            
+            setTimeout(() => {
+                startFaceIDSequence();
+            }, 500);
+        });
+
+        function saveToLocalStorage() {
+            localStorage.setItem('won_banking_transactions_v2', JSON.stringify(transactions));
+        }
+
+        function saveDateFilter() {
+            const filterVal = document.getElementById('filter-date-input').value.trim();
+            localStorage.setItem('won_banking_date_filter', filterVal);
+        }
+
+        function updateMainDashboard() {
+            const mainBalanceText = document.getElementById('main-balance-text');
+            const detailBalanceText = document.getElementById('detail-balance-text');
+            const detailAvailableText = document.getElementById('detail-available-text');
+
+            if (transactions.length > 0) {
+                const latestBalance = transactions[0].balance;
+                const formatted = `${latestBalance.toLocaleString()}원`;
+                
+                mainBalanceText.textContent = formatted;
+                detailBalanceText.textContent = formatted;
+                detailAvailableText.textContent = formatted;
+            } else {
+                mainBalanceText.textContent = "0원";
+                detailBalanceText.textContent = "0원";
+                detailAvailableText.textContent = "0원";
+            }
+        }
+
+        function goToHistory() {
+            document.getElementById('main-screen').classList.remove('flex');
+            document.getElementById('main-screen').classList.add('hidden');
+            document.getElementById('history-screen').classList.remove('hidden');
+            document.getElementById('history-screen').classList.add('flex');
+            renderTransactions();
+            updateMainDashboard();
+        }
+
+        function goToMain() {
+            document.getElementById('history-screen').classList.remove('flex');
+            document.getElementById('history-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+            document.getElementById('main-screen').classList.add('flex');
+            updateMainDashboard();
+        }
+
+        function toggleBalanceDisplay() {
+            showBalance = document.getElementById('balance-toggle').checked;
+            renderTransactions();
+        }
+
+        function renderTransactions() {
+            const container = document.getElementById('transaction-list-container');
+            container.innerHTML = "";
+
+            if (transactions.length === 0) {
+                container.innerHTML = `<div class="py-20 text-center text-gray-400 text-xs font-semibold">거래 내역이 존재하지 않습니다.</div>`;
+                return;
+            }
+
+            let currentGroupDate = "";
+            let groupDiv = null;
+            let itemsContainer = null;
+
+            transactions.forEach((tx, index) => {
+                if (tx.dateGroup !== currentGroupDate) {
+                    currentGroupDate = tx.dateGroup;
+                    
+                    groupDiv = document.createElement('div');
+                    groupDiv.className = "py-4 space-y-4";
+                    
+                    const dateHeader = document.createElement('div');
+                    dateHeader.className = "text-[12px] font-extrabold text-gray-400 mb-2 mt-1";
+                    dateHeader.textContent = tx.dateGroup;
+                    groupDiv.appendChild(dateHeader);
+
+                    itemsContainer = document.createElement('div');
+                    itemsContainer.className = "space-y-4";
+                    groupDiv.appendChild(itemsContainer);
+                     
+                    container.appendChild(groupDiv);
+                }
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "flex justify-between items-center cursor-pointer active:bg-gray-50/70 py-1 rounded transition";
+                itemDiv.onclick = () => openEditModal(index);
+
+                const leftArea = document.createElement('div');
+                leftArea.className = "space-y-0.5";
+                
+                const titleNode = document.createElement('div');
+                titleNode.className = "text-[14px] font-bold text-gray-900";
+                titleNode.textContent = tx.title;
+
+                const timeNode = document.createElement('div');
+                timeNode.className = "text-[10px] text-gray-400 font-semibold";
+                timeNode.textContent = tx.time;
+                leftArea.appendChild(titleNode);
+                leftArea.appendChild(timeNode);
+
+                const rightArea = document.createElement('div');
+                rightArea.className = "text-right space-y-0.5";
+
+                const amountNode = document.createElement('div');
+                if (tx.amount > 0) {
+                    amountNode.className = "text-[15px] font-extrabold text-[#3882F6]";
+                    amountNode.textContent = `+${tx.amount.toLocaleString()}원`;
+                } else {
+                    amountNode.className = "text-[15px] font-extrabold text-gray-900";
+                    amountNode.textContent = `${tx.amount.toLocaleString()}원`;
+                }
+
+                const balanceNode = document.createElement('div');
+                balanceNode.className = "text-[10px] text-gray-400 font-semibold";
+                balanceNode.textContent = `잔액 ${tx.balance.toLocaleString()}원`;
+                
+                if (!showBalance) balanceNode.style.display = 'none';
+
+                rightArea.appendChild(amountNode);
+                rightArea.appendChild(balanceNode);
+
+                itemDiv.appendChild(leftArea);
+                itemDiv.appendChild(rightArea);
+
+                itemsContainer.appendChild(itemDiv);
+            });
+        }
+
+        function showAlert(title, message) {
+            document.getElementById('alert-title').textContent = title;
+            document.getElementById('alert-message').textContent = message;
+            const modal = document.getElementById('alert-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAlert() {
+            document.getElementById('alert-modal').classList.add('hidden');
+        }
+
+        function showConfirm(title, message) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            document.getElementById('confirm-modal').classList.add('flex');
+            return new Promise((resolve) => { confirmPromiseResolver = resolve; });
+        }
+
+        function resolveConfirm(decision) {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            if (confirmPromiseResolver) { confirmPromiseResolver(decision); confirmPromiseResolver = null; }
+        }
+
+        function setModalType(type) {
+            const btnExpense = document.getElementById('btn-type-expense');
+            const btnIncome = document.getElementById('btn-type-income');
+            const typeInput = document.getElementById('edit-type');
+
+            if (type === 'expense') {
+                btnExpense.className = "flex-1 py-2.5 rounded-xl border-2 border-gray-900 bg-gray-900 text-white font-bold text-center transition";
+                btnIncome.className = "flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-400 font-bold text-center hover:bg-gray-50 transition";
+                typeInput.value = 'expense';
+            } else {
+                btnIncome.className = "flex-1 py-2.5 rounded-xl border-2 border-[#3882F6] bg-[#3882F6] text-white font-bold text-center transition";
+                btnExpense.className = "flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-400 font-bold text-center hover:bg-gray-50 transition";
+                typeInput.value = 'income';
+            }
+        }
+
+        function closeEditorModal() {
+            const modal = document.getElementById('editor-modal');
+            modal.querySelector('div').classList.add('translate-y-full');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        }
+
+        function openEditModal(index) {
+            const modal = document.getElementById('editor-modal');
+            document.getElementById('modal-title').textContent = "거래 내역 수정";
+            document.getElementById('btn-delete').style.display = "block";
+
+            const tx = transactions[index];
+            document.getElementById('edit-index').value = index;
+            document.getElementById('edit-title').value = tx.title;
+            document.getElementById('edit-date').value = `${tx.dateGroup} · ${tx.time}`;
+            document.getElementById('edit-amount').value = Math.abs(tx.amount);
+            document.getElementById('edit-balance').value = tx.balance;
+
+            setModalType(tx.amount < 0 ? 'expense' : 'income');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { modal.querySelector('div').classList.remove('translate-y-full'); }, 10);
+        }
+
+        function openAddModal() {
+            const modal = document.getElementById('editor-modal');
+            document.getElementById('modal-title').textContent = "새 거래 내역 등록";
+            document.getElementById('btn-delete').style.display = "none";
+            document.getElementById('edit-index').value = "-1";
+            document.getElementById('edit-title').value = "";
+            
+            const today = new Date();
+            document.getElementById('edit-date').value = `${today.getMonth() + 1}월 ${today.getDate()}일 · ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
+            document.getElementById('edit-amount').value = "";
+            document.getElementById('edit-balance').value = transactions.length > 0 ? transactions[0].balance : 0;
+            setModalType('expense');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { modal.querySelector('div').classList.remove('translate-y-full'); }, 10);
+        }
+
+        function saveTransaction() {
+            const index = parseInt(document.getElementById('edit-index').value);
+            const title = document.getElementById('edit-title').value.trim();
+            const fullStr = document.getElementById('edit-date').value.trim();
+            const rawAmount = parseInt(document.getElementById('edit-amount').value);
+            const balance = parseInt(document.getElementById('edit-balance').value);
+            const type = document.getElementById('edit-type').value;
+
+            if (!title || !fullStr || isNaN(rawAmount) || isNaN(balance)) {
+                showAlert("입력 오류", "모든 입력값을 확인해 주세요.");
+                return;
+            }
+
+            let dateGroup = "6월 15일", time = "00:00:00";
+            if (fullStr.includes('·')) {
+                const parts = fullStr.split('·');
+                dateGroup = parts[0].trim(); time = parts[1].trim();
+            } else {
+                dateGroup = fullStr;
+            }
+
+            const amount = type === 'expense' ? -rawAmount : rawAmount;
+
+            if (index === -1) {
+                transactions.unshift({ id: Date.now(), dateGroup, time, title, amount, balance });
+            } else {
+                transactions[index] = { ...transactions[index], title, dateGroup, time, amount, balance };
+            }
+
+            saveToLocalStorage();
+            closeEditorModal();
+            renderTransactions();
+            updateMainDashboard();
+        }
+
+        async function deleteTransaction() {
+            const index = parseInt(document.getElementById('edit-index').value);
+            if (index !== -1 && await showConfirm("거래 내역 삭제", "정말 삭제하시겠습니까?")) {
+                transactions.splice(index, 1);
+                saveToLocalStorage();
+                closeEditorModal();
+                renderTransactions();
+                updateMainDashboard();
+            }
+        }
+    </script>
+</body>
+</html>
