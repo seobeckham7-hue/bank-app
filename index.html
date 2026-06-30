@@ -109,7 +109,7 @@
         .delay-1 { animation-delay: -0.05s; }
         .delay-2 { animation-delay: -0.10s; }
         
-        /* 1. 틈새가 있는 원을 부드럽게 회전시키는 애니메이션 */
+        /* 1. 틈새가 있는 원을 부드럽게 회전시키는 애니메이션 (기존 유지) */
 @keyframes spin-loading {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -118,37 +118,25 @@
     animation: spin-loading 1s linear infinite;
 }
 
-/* 2. 성공 시 동그라미가 튕기는 바운스 효과 */
+/* 2. 원이 감기는 효과나 순차 딜레이 없이, 전체 완료 마크가 '팟!' 하고 부드럽게 튕기는 효과 */
 @keyframes success-bounce {
-    0% { transform: scale(0.6) translateY(2px); opacity: 0; }
-    60% { transform: scale(1.08) translateY(2px); opacity: 1; }
-    85% { transform: scale(0.96) translateY(2px); }
+    0% { transform: scale(0.7) translateY(2px); opacity: 0; }
+    70% { transform: scale(1.04) translateY(2px); opacity: 1; }
     100% { transform: scale(1) translateY(2px); opacity: 1; }
 }
 .animate-success-bounce {
-    animation: success-bounce 0.45s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: success-bounce 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-/* 3. 완료 순간 틈새 원의 빈 공간을 샥- 채우는 애니메이션 */
-@keyframes fill-circle {
-    to { stroke-dashoffset: 0; }
-}
-.draw-circle-full {
-    /* 기존 틈새(dasharray) 상태에서 가득 채워진 상태로 리셋 */
-    stroke-dasharray: 115;
-    stroke-dashoffset: 115;
-    animation: fill-circle 0.25s cubic-bezier(0.33, 1, 0.68, 1) forwards;
-}
-
-/* 4. 실제 아이폰의 샥- 그려지는 체크마크 속도 */
+/* 3. 체크마크 드로잉 (딜레이를 완전히 없애고 원과 동시에 바로 그려지기 시작합니다) */
 @keyframes draw-mark {
     to { stroke-dashoffset: 0; }
 }
 .draw-checkmark {
     stroke-dasharray: 30;
     stroke-dashoffset: 30;
-    /* 원이 채워지는 시점과 어우러지도록 미세한 딜레이 후 재생 */
-    animation: draw-mark 0.22s cubic-bezier(0.33, 1, 0.68, 1) 0.1s forwards;
+    /* 딜레이(delay) 없이 0.2초 동안 즉시 드로잉 */
+    animation: draw-mark 0.2s cubic-bezier(0.33, 1, 0.68, 1) forwards;
 }
 
         @keyframes woori-spin {
@@ -169,18 +157,18 @@
         <div class="dynamic-island-container">
             <div 
                 id="dynamic-island" 
-                class="bg-black flex flex-col items-center justify-center overflow-hidden border border-zinc-900/60 shadow-xl transition-all duration-500 cubic-bezier-spring rounded-[22px] w-[120px] h-[30px]"
+                class="bg-black flex flex-col items-center justify-center overflow-hidden border border-zinc-900/60 shadow-xl transition-all rounded-[22px] w-[120px] h-[30px]"
             >
                 <div class="relative w-full h-full flex items-center justify-center">
                     <div id="status-scanning" class="absolute w-24 h-24 flex items-center justify-center transition-all duration-500 ease-out opacity-0 scale-75 pointer-events-none">
     <svg class="w-[60px] h-[60px] transform translate-y-[2px] animate-spin-loading" viewBox="0 0 40 40">
-        <circle cx="20" cy="20" r="17.5" fill="none" stroke="#8CEE9D" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="94 12"></circle>
+        <circle cx="20" cy="20" r="17.5" fill="none" stroke="#8CEE9D" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="92 12"></circle>
     </svg>
 </div>
 
 <div id="status-success" class="absolute w-24 h-24 flex items-center justify-center opacity-0 scale-75 pointer-events-none transition-all duration-300">
     <div class="w-[60px] h-[60px] transform translate-y-[2px] relative flex items-center justify-center">
-        <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 40 40">
+        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 40 40">
             <circle id="success-circle-path" cx="20" cy="20" r="17.5" fill="none" stroke="#8CEE9D" stroke-width="2.2" stroke-linecap="round"></circle>
         </svg>
         <svg class="w-6 h-6 text-[#8CEE9D] z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1134,60 +1122,53 @@
     const viewSuccess = document.getElementById('status-success');
     const checkmarkPath = document.getElementById('checkmark-path');
 
-    // 초기 상태 리셋
+    // [초기 상태 리셋] 
+    island.style.transition = 'none'; // 리셋할 때는 애니메이션을 일시적으로 끕니다.
     island.classList.remove('w-[130px]', 'h-[130px]', 'opacity-0', 'scale-y-0', 'pointer-events-none');
     island.classList.add('w-[120px]', 'h-[30px]');
-    viewScanning.className = "absolute w-24 h-24 flex items-center justify-center perspective-1000 transition-all duration-500 ease-out opacity-0 scale-75 pointer-events-none";
+    
+    viewScanning.className = "absolute w-24 h-24 flex items-center justify-center opacity-0 pointer-events-none";
     viewSuccess.className = "absolute w-24 h-24 flex items-center justify-center transition-all duration-400 ease-out opacity-0 scale-75 pointer-events-none";
     checkmarkPath.classList.remove('draw-checkmark');
+    
+    const successCircle = document.getElementById('success-circle-path');
+    if (successCircle) successCircle.classList.remove('draw-circle-full');
 
-    // 1) 아일랜드 확장 — 스프링感 (살짝 오버슈트 후 안착)
+    // 강제 리플로우 (브라우저가 리셋 스타일을 먼저 적용하도록 유도)
+    island.offsetHeight;
+
+    // 1) 아일랜드 확장 (0.4초 동안 쫀득하게 확장되도록 고정)
     requestAnimationFrame(() => {
-        island.style.transitionTimingFunction = 'cubic-bezier(0.34, 1.56, 0.64, 1)'; // overshoot
+        island.style.transition = 'width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2), height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2)';
         island.classList.remove('w-[120px]', 'h-[30px]');
         island.classList.add('w-[130px]', 'h-[130px]');
     });
 
-    // 2) 스캔 링 등장 (확장 애니메이션이 끝나갈 즈음)
+    // 2) 스캔 링 등장 (확장 애니메이션이 부드럽게 안착하여 완료되는 400ms 시점에 딱 맞추어 등장)
     let t1 = setTimeout(() => {
-        island.style.transitionTimingFunction = ''; // 기본 cubic-bezier-spring 클래스로 복귀
-        viewScanning.classList.remove('opacity-0', 'scale-75', 'pointer-events-none');
-        viewScanning.classList.add('opacity-100', 'scale-100');
-    }, 280);
+        viewScanning.classList.remove('opacity-0', 'pointer-events-none');
+        viewScanning.style.transition = 'opacity 0.25s ease-out';
+        viewScanning.classList.add('opacity-100');
+    }, 400); // 280ms에서 400ms로 조절하여 크기 변화 완료 시점과 일치화
     timeouts.push(t1);
 
-    // 3) 스캔 링이 한 번 더 살짝 펄스 (인식 중인 느낌)
-    let t1b = setTimeout(() => {
-        viewScanning.style.transform = 'scale(1.06)';
-        let pulseBack = setTimeout(() => {
-            viewScanning.style.transform = 'scale(1)';
-        }, 140);
-        timeouts.push(pulseBack);
-    }, 900);
-    timeouts.push(t1b);
-
-    // 4) 인식 완료 직전 — 짧은 정지(텐션) 후 스캔 사라짐
+    // 4) 인식 완료 직전 — 스캔 링만 페이드아웃
     let t2pre = setTimeout(() => {
-        viewScanning.classList.remove('opacity-100', 'scale-100');
-        viewScanning.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
-    }, 1650);
+        viewScanning.classList.remove('opacity-100');
+        viewScanning.classList.add('opacity-0', 'pointer-events-none');
+    }, 1750);
     timeouts.push(t2pre);
 
-// 5) 체크마크 등장 (바운스 시작과 동시에 틈새 원 채우기 연동)
+    // 5) 체크마크 등장 (바운스 시작과 동시에 틈새 원 채우기 연동)
     let t2 = setTimeout(() => {
-        // 완료 컨테이너 등장 및 쫀득한 바운스 효과 트리거
         viewSuccess.classList.remove('opacity-0', 'scale-75', 'pointer-events-none');
         viewSuccess.classList.add('opacity-100', 'scale-100', 'animate-success-bounce');
         
-        // 5-1. 동그라미의 틈새가 부드럽게 채워지는 애니메이션 시작
-        const successCircle = document.getElementById('success-circle-path');
         if (successCircle) {
             successCircle.classList.add('draw-circle-full');
         }
-        
-        // 5-2. 원이 샥- 채워지는 흐름에 맞춰 내부 체크마크 드로잉 시작
         checkmarkPath.classList.add('draw-checkmark');
-    }, 1780);
+    }, 1880);
     timeouts.push(t2);
 
     // 6) 성공 상태 유지 후 축소 시작
@@ -1197,32 +1178,30 @@
         viewSuccess.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
         checkmarkPath.classList.remove('draw-checkmark');
 
-        island.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
+        // 축소 트랜지션
+        island.style.transition = 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease';
         island.classList.remove('w-[130px]', 'h-[130px]');
         island.classList.add('w-[100px]', 'h-[0px]', 'opacity-0', 'pointer-events-none');
 
         const splash = document.getElementById('splash-screen');
-        splash.classList.add('opacity-0');
+        if (splash) splash.classList.add('opacity-0');
 
         setTimeout(() => {
-            splash.style.display = 'none';
-
+            if (splash) splash.style.display = 'none';
             document.getElementById('main-screen').classList.remove('hidden');
             document.getElementById('main-screen').classList.add('flex');
-
             updateMainDashboard();
             openWelcomePopup();
         }, 400);
-    }, 2800);
+    }, 2900);
     timeouts.push(t3);
 
     let t4 = setTimeout(() => {
         isRunning = false;
-        // 인라인 스타일 정리 (다음 실행을 위해)
-        island.style.transitionTimingFunction = '';
+        island.style.transition = '';
         viewSuccess.style.transition = '';
-        viewScanning.style.transform = '';
-    }, 3300);
+        viewScanning.style.transition = '';
+    }, 3400);
     timeouts.push(t4);
 }
 
