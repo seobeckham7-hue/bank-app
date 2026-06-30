@@ -157,18 +157,6 @@
         }
         
         input { background: transparent; outline: none; border: none; width: 100%; }
-/* 로딩 화면(스플래시)이 처음 켜질 때 부드럽게 스케일업되며 등장하는 효과 */
-#splash-screen {
-    opacity: 0;
-    transform: scale(1.05);
-    transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
-}
-
-/* 활성화되었을 때 (기본 상태) */
-#splash-screen.active {
-    opacity: 1;
-    transform: scale(1);
-}
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
@@ -193,7 +181,7 @@
                         <div class="absolute w-12 h-12 border-[3.8px] border-[#8CEE9D]/20 rounded-full animate-smooth-spin-3 transform-style-3d delay-2"></div>
                     </div>
                     <div id="status-success" class="absolute w-24 h-24 flex items-center justify-center transition-all duration-400 ease-out opacity-0 scale-75 pointer-events-none">
-                        <div class="w-14 h-14 border-[3.8px] border-[#8CEE9D] rounded-full flex items-center justify-center bg-[#8CEE9D]/5 shadow-[0_0_15px_rgba(140,238,157,0.2)]">
+                        <div class="w-14 h-14 transform translate-y-[2px] border-[3.8px] border-[#8CEE9D] rounded-full flex items-center justify-center bg-[#8CEE9D]/5 shadow-[0_0_15px_rgba(140,238,157,0.2)]">
                             <svg class="w-6 h-6 text-[#8CEE9D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path id="checkmark-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5" d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -203,7 +191,7 @@
             </div>
         </div>
 
-        <div id="splash-screen" class="absolute inset-0 bg-white z-40 flex flex-col justify-between items-center py-20">
+        <div id="splash-screen" class="absolute inset-0 bg-white z-40 flex flex-col justify-between items-center py-20 transition-all duration-500">
             <div></div>
             <div id="splash-logo" class="flex flex-col items-center transition-all duration-500 transform scale-100 opacity-100">
                 <div class="relative w-28 h-16 mb-4">
@@ -770,141 +758,292 @@
 
     <script>
        const defaultTransactions = [
-  { id: 1, dateGroup: "6월 25일", time: "12:00:00", title: "박수진", amount: 12000, balance: 0 },
-  { id: 2, dateGroup: "6월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 }, // 10만 -> 50만 변경
-  { id: 3, dateGroup: "6월 24일", time: "19:05:41", title: "쿠팡", amount: -28000, balance: 0 },
-  { id: 4, dateGroup: "6월 23일", time: "12:40:00", title: "삼성증권(입금)", amount: 300000, balance: 0 },
-  { id: 5, dateGroup: "6월 22일", time: "08:15:33", title: "GS25 수영점", amount: -6500, balance: 0 },
-  { id: 6, dateGroup: "6월 20일", time: "23:45:10", title: "카카오T", amount: -9800, balance: 0 },
-  { id: 7, dateGroup: "6월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
-  { id: 8, dateGroup: "6월 17일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
-  { id: 9, dateGroup: "6월 16일", time: "08:30:00", title: "파리바게뜨 대연점", amount: -8500, balance: 0 },
-  { id: 10, dateGroup: "6월 15일", time: "18:05:22", title: "우리카드결제대금", amount: -1250000, balance: 0 },
-  { id: 11, dateGroup: "6월 14일", time: "15:00:00", title: "중고거래 입금", amount: 50000, balance: 0 },
-  { id: 12, dateGroup: "6월 13일", time: "19:45:10", title: "해외 MANCITY", amount: -120000, balance: 0 },
-  { id: 13, dateGroup: "6월 11일", time: "21:10:05", title: "쿠팡페이", amount: -62000, balance: 0 },
-  { id: 14, dateGroup: "6월 10일", time: "19:30:00", title: "쿠팡", amount: -25000, balance: 0 },
-  { id: 15, dateGroup: "6월 09일", time: "14:20:05", title: "해외 iHerb", amount: -72000, balance: 0 },
-  { id: 16, dateGroup: "6월 07일", time: "12:40:11", title: "스타벅스 광안점", amount: -12000, balance: 0 },
-  { id: 17, dateGroup: "6월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
-  { id: 18, dateGroup: "6월 04일", time: "18:10:00", title: "최지훈", amount: 20000, balance: 0 },
-  { id: 19, dateGroup: "6월 02일", time: "14:30:20", title: "온누리약국 광안점", amount: -8500, balance: 0 },
-  { id: 20, dateGroup: "6월 01일", time: "13:20:00", title: "Booklive", amount: -18000, balance: 0 },
-  
-  { id: 21, dateGroup: "5월 30일", time: "18:50:30", title: "쿠팡페이", amount: -22000, balance: 0 },
-  { id: 22, dateGroup: "5월 28일", time: "10:15:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
-  { id: 23, dateGroup: "5월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
-  { id: 24, dateGroup: "5월 26일", time: "21:10:05", title: "쿠팡", amount: -54200, balance: 0 },
-  { id: 25, dateGroup: "5월 25일", time: "15:00:00", title: "쇼핑몰 환불", amount: 45000, balance: 0 },
-  { id: 26, dateGroup: "5월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 }, // 추가
-  { id: 27, dateGroup: "5월 24일", time: "08:45:12", title: "GS25 경대점", amount: -7500, balance: 0 },
-  { id: 28, dateGroup: "5월 22일", time: "23:05:40", title: "카카오T", amount: -12400, balance: 0 },
-  { id: 29, dateGroup: "5월 21일", time: "19:30:00", title: "쿠팡", amount: -54200, balance: 0 },
-  { id: 30, dateGroup: "5월 20일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
-  { id: 31, dateGroup: "5월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
-  { id: 32, dateGroup: "5월 16일", time: "12:00:00", title: "맘스터치 서면점", amount: -3000, balance: 0 },
-  { id: 33, dateGroup: "5월 15일", time: "18:10:00", title: "우리카드결제대금", amount: -1150000, balance: 0 },
-  { id: 34, dateGroup: "5월 14일", time: "19:00:00", title: "카카오T", amount: -9800, balance: 0 },
-  { id: 35, dateGroup: "5월 12일", time: "13:40:00", title: "토스증권(투자)", amount: -1000000, balance: 0 },
-  { id: 36, dateGroup: "5월 11일", time: "12:30:00", title: "이준호", amount: 30000, balance: 0 },
-  { id: 37, dateGroup: "5월 10일", time: "18:50:30", title: "쿠팡페이", amount: -28000, balance: 0 },
-  { id: 38, dateGroup: "5월 08일", time: "19:22:15", title: "올리브영 대연점", amount: -45000, balance: 0 },
-  { id: 39, dateGroup: "5월 06일", time: "10:15:00", title: "삼성증권(대체)", amount: -2000000, balance: 0 },
-  { id: 40, dateGroup: "5월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
-  { id: 41, dateGroup: "5월 03일", time: "14:20:00", title: "해외 마이프로틴", amount: -85000, balance: 0 },
-  { id: 42, dateGroup: "5월 01일", time: "12:40:00", title: "스타벅스 수영점", amount: -5000, balance: 0 },
-  
-  { id: 43, dateGroup: "4월 30일", time: "18:50:30", title: "쿠팡", amount: -24000, balance: 0 },
-  { id: 44, dateGroup: "4월 28일", time: "15:30:00", title: "교보문고", amount: -31400, balance: 0 },
-  { id: 45, dateGroup: "4월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
-  { id: 46, dateGroup: "4월 26일", time: "15:00:00", title: "토스증권(입금)", amount: 250000, balance: 0 },
-  { id: 47, dateGroup: "4월 25일", time: "12:30:00", title: "CU 편의점 경대점", amount: -4200, balance: 0 },
-  { id: 48, dateGroup: "4월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 }, // 추가
-  { id: 49, dateGroup: "4월 23일", time: "18:15:00", title: "CGV 광안점", amount: -14000, balance: 0 },
-  { id: 50, dateGroup: "4월 21일", time: "19:40:00", title: "네이버페이결제", amount: -42000, balance: 0 },
-  { id: 51, dateGroup: "4월 20일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
-  { id: 52, dateGroup: "4월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
-  { id: 53, dateGroup: "4월 16일", time: "08:20:00", title: "메가커피 대연점", amount: -3500, balance: 0 },
-  { id: 54, dateGroup: "4월 15일", time: "18:05:10", title: "우리카드결제대금", amount: -850000, balance: 0 },
-  { id: 55, dateGroup: "4월 13일", time: "18:30:00", title: "쿠팡페이", amount: -28000, balance: 0 },
-  { id: 56, dateGroup: "4월 12일", time: "14:20:05", title: "해외 iHerb", amount: -65400, balance: 0 },
-  { id: 57, dateGroup: "4월 11일", time: "12:45:00", title: "Booklive", amount: -15000, balance: 0 },
-  { id: 58, dateGroup: "4월 09일", time: "19:15:22", title: "돼지국밥 서면점", amount: -18000, balance: 0 },
-  { id: 59, dateGroup: "4월 08일", time: "20:10:00", title: "쿠팡 환불", amount: 12500, balance: 0 },
-  { id: 60, dateGroup: "4월 06일", time: "13:40:00", title: "토스증권(투자)", amount: -1500000, balance: 0 },
-  { id: 61, dateGroup: "4월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
-  { id: 62, dateGroup: "4월 04일", time: "18:00:00", title: "김민수", amount: 15000, balance: 0 },
-  { id: 63, dateGroup: "4월 02일", time: "12:20:00", title: "올리브영 광안점", amount: -32000, balance: 0 },
-  { id: 64, dateGroup: "4월 01일", time: "19:05:00", title: "카카오T", amount: -11500, balance: 0 },
-  
-  { id: 65, dateGroup: "3월 31일", time: "08:45:12", title: "GS25 수영점", amount: -4200, balance: 0 },
-  { id: 66, dateGroup: "3월 30일", time: "15:20:00", title: "당근마켓 입금", amount: 35000, balance: 0 },
-  { id: 67, dateGroup: "3월 29일", time: "19:15:22", title: "부산밀면 경대점", amount: -18000, balance: 0 },
-  { id: 68, dateGroup: "3월 28일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
-  { id: 69, dateGroup: "3월 27일", time: "12:30:00", title: "스타벅스 대연점", amount: -5000, balance: 0 },
-  { id: 70, dateGroup: "3월 26일", time: "18:45:00", title: "쿠팡페이", amount: -24000, balance: 0 },
-  { id: 71, dateGroup: "3월 25일", time: "14:30:00", title: "DMM 포인트 결제", amount: -25000, balance: 0 },
-  { id: 72, dateGroup: "3월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 }, // 추가
-  { id: 73, dateGroup: "3월 24일", time: "18:30:00", title: "쿠팡", amount: -27000, balance: 0 },
-  { id: 74, dateGroup: "3월 22일", time: "12:45:00", title: "토스증권(투자)", amount: -500000, balance: 0 },
-  { id: 75, dateGroup: "3월 20일", time: "21:10:15", title: "카카오T", amount: -8500, balance: 0 },
-  { id: 76, dateGroup: "3월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
-  { id: 77, dateGroup: "3월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
-  { id: 78, dateGroup: "3월 15일", time: "18:05:00", title: "우리카드결제대금", amount: -950000, balance: 0 },
-  // 3월 13일 우리적금만기해지 삭제됨
-  { id: 79, dateGroup: "3월 11일", time: "14:20:00", title: "해외 iHerb", amount: -72000, balance: 0 },
-  { id: 80, dateGroup: "3월 09일", time: "19:15:00", title: "쿠팡", amount: -45000, balance: 0 },
-  { id: 81, dateGroup: "3월 07일", time: "12:30:00", title: "스타벅스 서면점", amount: -5000, balance: 0 },
-  { id: 82, dateGroup: "3월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
-  { id: 83, dateGroup: "3월 03일", time: "18:45:00", title: "교촌치킨 수영점", amount: -23000, balance: 0 },
-  { id: 84, dateGroup: "3월 01일", time: "15:20:00", title: "Booklive", amount: -12000, balance: 0 },
-  
-  { id: 85, dateGroup: "2월 28일", time: "19:30:00", title: "쿠팡페이", amount: -25000, balance: 0 },
-  { id: 86, dateGroup: "2월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
-  { id: 87, dateGroup: "2월 25일", time: "18:10:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
-  { id: 88, dateGroup: "2월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 }, // 추가
-  { id: 89, dateGroup: "2월 23일", time: "12:15:00", title: "올리브영 경대점", amount: -28000, balance: 0 },
-  { id: 90, dateGroup: "2월 21일", time: "14:30:00", title: "스타벅스 수영점", amount: -12000, balance: 0 },
-  { id: 91, dateGroup: "2월 21일", time: "12:00:00", title: "황남빵 대연점", amount: -24000, balance: 0 },
-  { id: 92, dateGroup: "2월 20일", time: "19:00:00", title: "식당석식 광안점", amount: -35000, balance: 0 },
-  { id: 93, dateGroup: "2월 20일", time: "15:30:00", title: "카카오T", amount: -11200, balance: 0 },
-  { id: 94, dateGroup: "2월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
-  { id: 95, dateGroup: "2월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
-  { id: 96, dateGroup: "2월 15일", time: "18:10:00", title: "우리카드결제대금", amount: -1120000, balance: 0 },
-  { id: 97, dateGroup: "2월 14일", time: "19:20:00", title: "쿠팡페이", amount: -32000, balance: 0 },
-  { id: 98, dateGroup: "2월 12일", time: "14:10:00", title: "해외 마이프로틴", amount: -95000, balance: 0 },
-  { id: 99, dateGroup: "2월 10일", time: "19:40:00", title: "쿠팡", amount: -52000, balance: 0 },
-  { id: 100, dateGroup: "2월 08일", time: "13:20:00", title: "토스증증권(투자)", amount: -500000, balance: 0 },
-  { id: 101, dateGroup: "2월 07일", time: "12:30:00", title: "CU 대연점", amount: -4500, balance: 0 },
-  { id: 102, dateGroup: "2월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
-  { id: 103, dateGroup: "2월 03일", time: "18:30:00", title: "최지훈", amount: 20000, balance: 0 },
-  { id: 104, dateGroup: "2월 02일", time: "12:45:00", title: "메가커피 광안점", amount: -3000, balance: 0 },
-  { id: 105, dateGroup: "2월 01일", time: "19:10:00", title: "쿠팡", amount: -22000, balance: 0 },
-  
-  { id: 106, dateGroup: "1월 30일", time: "15:00:00", title: "당근마켓 입금", amount: 45000, balance: 0 },
-  { id: 107, dateGroup: "1월 28일", time: "19:30:00", title: "네이버페이결제", amount: -34000, balance: 0 },
-  { id: 108, dateGroup: "1월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
-  { id: 109, dateGroup: "1월 25일", time: "12:15:00", title: "맥도날드 서면점", amount: -8500, balance: 0 },
-  { id: 110, dateGroup: "1월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 }, // 추가
-  { id: 111, dateGroup: "1월 24일", time: "18:50:00", title: "무신사", amount: -79000, balance: 0 },
-  { id: 112, dateGroup: "1월 22일", time: "21:10:05", title: "쿠팡", amount: -45000, balance: 0 },
-  { id: 113, dateGroup: "1월 20일", time: "23:45:10", title: "카카오T", amount: -9800, balance: 0 },
-  { id: 114, dateGroup: "1월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
-  { id: 115, dateGroup: "1월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
-  { id: 116, dateGroup: "1월 16일", time: "12:30:00", title: "스타벅스 경대점", amount: -5000, balance: 0 },
-  { id: 117, dateGroup: "1월 15일", time: "18:05:22", title: "우리카드결제대금", amount: -1250000, balance: 0 },
-  { id: 118, dateGroup: "1월 14일", time: "19:00:00", title: "쿠팡페이", amount: -28000, balance: 0 },
-  { id: 119, dateGroup: "1월 12일", time: "14:20:05", title: "해외 iHerb", amount: -68000, balance: 0 },
-  { id: 120, dateGroup: "1월 10일", time: "10:15:00", title: "삼성증권(대체)", amount: -1500000, balance: 0 },
-  { id: 121, dateGroup: "1월 09일", time: "18:15:00", title: "CGV 서면점", amount: -14000, balance: 0 },
-  { id: 122, dateGroup: "1월 07일", time: "12:40:11", title: "Booklive", amount: -18000, balance: 0 },
-  { id: 123, dateGroup: "1월 06일", time: "08:45:12", title: "GS25 광안점", amount: -5200, balance: 0 },
-  { id: 124, dateGroup: "1월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
-  { id: 125, dateGroup: "1월 04일", time: "19:15:22", title: "돼지국밥 대연점", amount: -16000, balance: 0 },
-  { id: 126, dateGroup: "1월 03일", time: "12:00:00", title: "파리바게뜨 수영점", amount: -12000, balance: 0 },
-  { id: 127, dateGroup: "1월 02일", time: "18:40:00", title: "쿠팡", amount: -25000, balance: 0 },
-  { id: 128, dateGroup: "1월 01일", time: "13:20:00", title: "스타벅스 대연점", amount: -10000, balance: 0 },
-  { id: 129, dateGroup: "1월 01일", time: "10:00:00", title: "초기잔액이관", amount: 0, balance: 0 }
+  // ------------------- 12월 (총 21개) -------------------
+  { id: 1, dateGroup: "12월 31일", time: "23:15:00", title: "카카오T 연말이동", amount: -18500, balance: 0 },
+  { id: 2, dateGroup: "12월 30일", time: "18:50:30", title: "쿠팡", amount: -24000, balance: 0 },
+  { id: 3, dateGroup: "12월 29일", time: "19:30:00", title: "배달의민족", amount: -26000, balance: 0 },
+  { id: 4, dateGroup: "12월 28일", time: "15:30:00", title: "교보문고", amount: -18000, balance: 0 },
+  { id: 5, dateGroup: "12월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 6, dateGroup: "12월 25일", time: "12:00:00", title: "박수진", amount: 30000, balance: 0 },
+  { id: 7, dateGroup: "12월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 8, dateGroup: "12월 25일", time: "09:30:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 9, dateGroup: "12월 24일", time: "23:40:00", title: "서면 사보이(SAVOY)", amount: -42000, balance: 0 }, // 유흥비 추가 (서면 칵테일바)
+  { id: 10, dateGroup: "12월 24일", time: "19:05:41", title: "쿠팡", amount: -28000, balance: 0 },
+  { id: 11, dateGroup: "12월 23일", time: "12:30:00", title: "맥도날드 광안점", amount: -9200, balance: 0 },
+  { id: 12, dateGroup: "12월 22일", time: "08:15:33", title: "GS25 수영점", amount: -4500, balance: 0 },
+  { id: 13, dateGroup: "12월 20일", time: "23:45:10", title: "카카오T", amount: -12000, balance: 0 },
+  { id: 14, dateGroup: "12월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 15, dateGroup: "12월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 16, dateGroup: "12월 16일", time: "08:30:00", title: "파리바게뜨 대연점", amount: -6500, balance: 0 },
+  { id: 17, dateGroup: "12월 15일", time: "18:05:22", title: "우리카드결제대금", amount: -1150000, balance: 0 },
+  { id: 18, dateGroup: "12월 12일", time: "21:30:00", title: "락휴코인노래연습장 서면점", amount: -10000, balance: 0 }, // 유흥비 추가 (노래방)
+  { id: 19, dateGroup: "12월 11일", time: "21:10:05", title: "쿠팡페이", amount: -42000, balance: 0 },
+  { id: 20, dateGroup: "12월 08일", time: "14:15:00", title: "스타벅스 수영점", amount: -5500, balance: 0 },
+  { id: 21, dateGroup: "12월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 22, dateGroup: "12월 02일", time: "14:30:20", title: "온누리약국 광안점", amount: -8500, balance: 0 },
+
+  // ------------------- 11월 (총 20개) -------------------
+  { id: 23, dateGroup: "11월 29일", time: "18:20:00", title: "네이버플러스멤버십", amount: -4900, balance: 0 },
+  { id: 24, dateGroup: "11월 28일", time: "23:50:00", title: "광안리 퍼지네이블", amount: -58000, balance: 0 }, // 유흥비 추가 (광안리 칵테일바)
+  { id: 25, dateGroup: "11월 28일", time: "10:15:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 26, dateGroup: "11월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 27, dateGroup: "11월 26일", time: "21:10:05", title: "쿠팡", amount: -54200, balance: 0 },
+  { id: 28, dateGroup: "11월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 29, dateGroup: "11월 24일", time: "08:45:12", title: "GS25 경대점", amount: -7500, balance: 0 },
+  { id: 30, dateGroup: "11월 23일", time: "19:15:00", title: "마켓컬리", amount: -38400, balance: 0 },
+  { id: 31, dateGroup: "11월 22일", time: "23:05:40", title: "카카오T", amount: -9800, balance: 0 },
+  { id: 32, dateGroup: "11월 20일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 33, dateGroup: "11월 19일", time: "12:30:00", title: "한솥도시락 대연점", amount: -6500, balance: 0 },
+  { id: 34, dateGroup: "11월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 35, dateGroup: "11월 15일", time: "22:40:00", title: "수영 자갈치횟집", amount: -85000, balance: 0 }, // 유흥비 추가 (수영 노포맛집 술자리)
+  { id: 36, dateGroup: "11월 15일", time: "18:10:00", title: "우리카드결제대금", amount: -1200000, balance: 0 },
+  { id: 37, dateGroup: "11월 14일", time: "15:00:00", title: "주민세환급", amount: 12500, balance: 0 },
+  { id: 38, dateGroup: "11월 12일", time: "13:40:00", title: "토스증권(투자)", amount: -500000, balance: 0 },
+  { id: 39, dateGroup: "11월 10일", time: "18:50:30", title: "쿠팡페이", amount: -28000, balance: 0 },
+  { id: 40, dateGroup: "11월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 41, dateGroup: "11월 01일", time: "12:40:00", title: "스타벅스 수영점", amount: -5000, balance: 0 },
+
+  // ------------------- 10월 (총 20개) -------------------
+  { id: 42, dateGroup: "10월 31일", time: "20:45:00", title: "넷플릭스 정기결제", amount: -17000, balance: 0 },
+  { id: 43, dateGroup: "10월 30일", time: "18:50:30", title: "쿠팡", amount: -32000, balance: 0 },
+  { id: 44, dateGroup: "10월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 45, dateGroup: "10월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 46, dateGroup: "10월 25일", time: "09:30:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 47, dateGroup: "10월 24일", time: "22:10:00", title: "동래 골목푸르지오", amount: -48000, balance: 0 }, // 유흥비 추가 (동래 술집)
+  { id: 48, dateGroup: "10월 23일", time: "18:15:00", title: "CGV 광안점", amount: -14000, balance: 0 },
+  { id: 49, dateGroup: "10월 22일", time: "12:10:00", title: "컴포즈커피 서면점", amount: -3000, balance: 0 },
+  { id: 50, dateGroup: "10월 20일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 51, dateGroup: "10월 19일", time: "19:00:00", title: "올리브영 세일", amount: -42500, balance: 0 },
+  { id: 52, dateGroup: "10월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 53, dateGroup: "10월 15일", time: "18:05:10", title: "우리카드결제대금", amount: -950000, balance: 0 },
+  { id: 54, dateGroup: "10월 14일", time: "08:30:00", title: "이마트24 수영점", amount: -5600, balance: 0 },
+  { id: 55, dateGroup: "10월 12일", time: "23:00:00", title: "텐스노래연습장 동래점", amount: -15000, balance: 0 }, // 유흥비 추가 (동래 노래방)
+  { id: 56, dateGroup: "10월 12일", time: "14:20:05", title: "해외 iHerb", amount: -54000, balance: 0 },
+  { id: 57, dateGroup: "10월 09일", time: "19:15:22", title: "돼지국밥 서면점", amount: -18000, balance: 0 },
+  { id: 58, dateGroup: "10월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 59, dateGroup: "10월 03일", time: "15:30:00", title: "다이소 수영점", amount: -8000, balance: 0 },
+  { id: 60, dateGroup: "10월 01일", time: "19:05:00", title: "카카오T", amount: -11500, balance: 0 },
+
+  // ------------------- 9월 (총 21개) -------------------
+  { id: 61, dateGroup: "9월 30일", time: "15:20:00", title: "당근마켓 입금", amount: 25000, balance: 0 },
+  { id: 62, dateGroup: "9월 29일", time: "12:15:00", title: "빽다방 경대점", amount: -3500, balance: 0 },
+  { id: 63, dateGroup: "9월 28일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 64, dateGroup: "9월 26일", time: "18:45:00", title: "쿠팡페이", amount: -19000, balance: 0 },
+  { id: 65, dateGroup: "9월 25일", time: "23:10:00", title: "부산대 칠칠켄터키", amount: -32000, balance: 0 }, // 유흥비 추가 (부산대 술집)
+  { id: 66, dateGroup: "9월 25일", time: "19:20:00", title: "요기요 배달", amount: -28000, balance: 0 },
+  { id: 67, dateGroup: "9월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 68, dateGroup: "9월 25일", time: "09:30:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 69, dateGroup: "9월 22일", time: "12:45:00", title: "토스증권(투자)", amount: -500000, balance: 0 },
+  { id: 70, dateGroup: "9월 21일", time: "08:10:00", title: "GS25 대연점", amount: -3800, balance: 0 },
+  { id: 71, dateGroup: "9월 20일", time: "21:10:15", title: "카카오T", amount: -8500, balance: 0 },
+  { id: 72, dateGroup: "9월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 73, dateGroup: "9월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 74, dateGroup: "9월 16일", time: "19:00:00", title: "서면 삼겹살가게", amount: -45000, balance: 0 },
+  { id: 75, dateGroup: "9월 15일", time: "18:05:00", title: "우리카드결제대금", amount: -1050000, balance: 0 },
+  { id: 76, dateGroup: "9월 12일", time: "22:50:00", title: "부산대 테라스클럽", amount: -55000, balance: 0 }, // 유흥비 추가 (부산대 펍)
+  { id: 77, dateGroup: "9월 11일", time: "19:15:00", title: "쿠팡", amount: -45000, balance: 0 },
+  { id: 78, dateGroup: "9월 07일", time: "13:00:00", title: "컴포즈커피 광안점", amount: -2500, balance: 0 },
+  { id: 79, dateGroup: "9월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 80, dateGroup: "9월 02일", time: "15:20:00", title: "Booklive", amount: -12000, balance: 0 },
+
+  // ------------------- 8월 (총 20개) -------------------
+  { id: 81, dateGroup: "8월 30일", time: "14:20:00", title: "메가커피 수영점", amount: -3000, balance: 0 },
+  { id: 82, dateGroup: "8월 28일", time: "19:30:00", title: "쿠팡페이", amount: -31000, balance: 0 },
+  { id: 83, dateGroup: "8월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 84, dateGroup: "8월 25일", time: "23:30:00", title: "광안리 한월횟집", amount: -120000, balance: 0 }, // 유흥비 추가 (광안리 횟집 술자리)
+  { id: 85, dateGroup: "8월 25일", time: "18:10:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 86, dateGroup: "8월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 87, dateGroup: "8월 24일", time: "20:15:00", title: "배달의민족 치킨", amount: -24000, balance: 0 },
+  { id: 88, dateGroup: "8월 21일", time: "14:30:00", title: "스타벅스 수영점", amount: -6000, balance: 0 },
+  { id: 89, dateGroup: "8월 20일", time: "15:30:00", title: "카카오T", amount: -14200, balance: 0 },
+  { id: 90, dateGroup: "8월 19일", time: "11:50:00", title: "김밥천국 대연점", amount: -7000, balance: 0 },
+  { id: 91, dateGroup: "8월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 92, dateGroup: "8월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 93, dateGroup: "8월 16일", time: "18:40:00", title: "홈플러스 익스프레스", amount: -32500, balance: 0 },
+  { id: 94, dateGroup: "8월 15일", time: "23:00:00", title: "코인싱어노래연습장 광안점", amount: -8000, balance: 0 }, // 유흥비 추가 (노래방)
+  { id: 95, dateGroup: "8월 15일", time: "18:10:00", title: "우리카드결제대금", amount: -1280000, balance: 0 },
+  { id: 96, dateGroup: "8월 12일", time: "14:10:00", title: "해외 마이프로틴", amount: -88000, balance: 0 },
+  { id: 97, dateGroup: "8월 07일", time: "19:00:00", title: "서면 보드게임카페", amount: -15000, balance: 0 },
+  { id: 98, dateGroup: "8월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 99, dateGroup: "8월 01일", time: "19:10:00", title: "쿠팡", amount: -15000, balance: 0 },
+
+  // ------------------- 7월 (총 20개) -------------------
+  { id: 100, dateGroup: "7월 30일", time: "15:00:00", title: "당근마켓 입금", amount: 30000, balance: 0 },
+  { id: 101, dateGroup: "7월 29일", time: "13:00:00", title: "쥬씨 수영점", amount: -3800, balance: 0 },
+  { id: 102, dateGroup: "7월 28일", time: "19:30:00", title: "네이버페이결제", amount: -24000, balance: 0 },
+  { id: 103, dateGroup: "7월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 104, dateGroup: "7월 26일", time: "20:00:00", title: "배달의민족 피자", amount: -29000, balance: 0 },
+  { id: 105, dateGroup: "7월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 106, dateGroup: "7월 25일", time: "09:30:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 107, dateGroup: "7월 24일", time: "22:30:00", title: "남포동 백화양곱창", amount: -75000, balance: 0 }, // 유흥비 추가 (남포동 소주자리)
+  { id: 108, dateGroup: "7월 24일", time: "18:50:00", title: "무신사", amount: -65000, balance: 0 },
+  { id: 109, dateGroup: "7월 22일", time: "12:15:00", title: "CU 편의점 대연점", amount: -6200, balance: 0 },
+  { id: 110, dateGroup: "7월 20일", time: "23:45:10", title: "카카오T", amount: -9800, balance: 0 },
+  { id: 111, dateGroup: "7월 19일", time: "15:40:00", title: "스타벅스 센텀점", amount: -12000, balance: 0 },
+  { id: 112, dateGroup: "7월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 113, dateGroup: "7월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 114, dateGroup: "7월 16일", time: "19:30:00", title: "광안리 횟집식사", amount: -75000, balance: 0 },
+  { id: 115, dateGroup: "7월 15일", time: "23:40:00", title: "남포동 똥꼬", amount: -38000, balance: 0 }, // 유흥비 추가 (남포 포차술집)
+  { id: 116, dateGroup: "7월 15일", time: "18:05:22", title: "우리카드결제대금", amount: -1420000, balance: 0 },
+  { id: 117, dateGroup: "7월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 118, dateGroup: "7월 03일", time: "08:20:00", title: "GS25 수영점", amount: -4100, balance: 0 },
+  { id: 119, dateGroup: "7월 02일", time: "18:40:00", title: "쿠팡", amount: -21000, balance: 0 },
+
+  // ------------------- 상반기 (월별 유흥비 반영 완료) -------------------
+  // 6월 (총 23개)
+  { id: 120, dateGroup: "6월 25일", time: "12:00:00", title: "박수진", amount: 12000, balance: 0 },
+  { id: 121, dateGroup: "6월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 122, dateGroup: "6월 25일", time: "09:30:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 123, dateGroup: "6월 24일", time: "19:05:41", title: "쿠팡", amount: -28000, balance: 0 },
+  { id: 124, dateGroup: "6월 23일", time: "12:40:00", title: "삼성증권(입금)", amount: 300000, balance: 0 },
+  { id: 125, dateGroup: "6월 22일", time: "23:30:00", title: "수영 골목길곱창", amount: -65000, balance: 0 }, // 유흥비 추가 (수영 술집)
+  { id: 126, dateGroup: "6월 22일", time: "08:15:33", title: "GS25 수영점", amount: -6500, balance: 0 },
+  { id: 127, dateGroup: "6월 20일", time: "23:45:10", title: "카카오T", amount: -9800, balance: 0 },
+  { id: 128, dateGroup: "6월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 129, dateGroup: "6월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 130, dateGroup: "6월 16일", time: "08:30:00", title: "파리바게뜨 대연점", amount: -8500, balance: 0 },
+  { id: 131, dateGroup: "6월 15일", time: "18:05:22", title: "우리카드결제대금", amount: -1250000, balance: 0 },
+  { id: 132, dateGroup: "6월 14일", time: "15:00:00", title: "중고거래 입금", amount: 50000, balance: 0 },
+  { id: 133, dateGroup: "6월 13일", time: "19:45:10", title: "해외 MANCITY", amount: -120000, balance: 0 },
+  { id: 134, dateGroup: "6월 11일", time: "21:10:05", title: "쿠팡페이", amount: -62000, balance: 0 },
+  { id: 135, dateGroup: "6월 10일", time: "19:30:00", title: "쿠팡", amount: -25000, balance: 0 },
+  { id: 136, dateGroup: "6월 09일", time: "14:20:05", title: "해외 iHerb", amount: -72000, balance: 0 },
+  { id: 137, dateGroup: "6월 07일", time: "23:10:00", title: "수영 생활맥주", amount: -28000, balance: 0 }, // 유흥비 추가 (수영 맥주)
+  { id: 138, dateGroup: "6월 07일", time: "12:40:11", title: "스타벅스 광안점", amount: -12000, balance: 0 },
+  { id: 139, dateGroup: "6월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 140, dateGroup: "6월 04일", time: "18:10:00", title: "최지훈", amount: 20000, balance: 0 },
+  { id: 141, dateGroup: "6월 02일", time: "14:30:20", title: "온누리약국 광안점", amount: -8500, balance: 0 },
+  { id: 142, dateGroup: "6월 01일", time: "13:20:00", title: "Booklive", amount: -18000, balance: 0 },
+
+  // 5월 (총 23개)
+  { id: 143, dateGroup: "5월 30일", time: "18:50:30", title: "쿠팡페이", amount: -22000, balance: 0 },
+  { id: 144, dateGroup: "5월 28일", time: "10:15:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 145, dateGroup: "5월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 146, dateGroup: "5월 26일", time: "21:10:05", title: "쿠팡", amount: -54200, balance: 0 },
+  { id: 147, dateGroup: "5월 25일", time: "15:00:00", title: "쇼핑몰 환불", amount: 45000, balance: 0 },
+  { id: 148, dateGroup: "5월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 149, dateGroup: "5월 24일", time: "08:45:12", title: "GS25 경대점", amount: -7500, balance: 0 },
+  { id: 150, dateGroup: "5월 22일", time: "23:55:00", title: "서면 한신포차", amount: -46000, balance: 0 }, // 유흥비 추가 (서면 포차)
+  { id: 151, dateGroup: "5월 22일", time: "23:05:40", title: "카카오T", amount: -12400, balance: 0 },
+  { id: 152, dateGroup: "5월 21일", time: "19:30:00", title: "쿠팡", amount: -54200, balance: 0 },
+  { id: 153, dateGroup: "5월 20일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 154, dateGroup: "5월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 155, dateGroup: "5월 16일", time: "12:00:00", title: "맘스터치 서면점", amount: -3000, balance: 0 },
+  { id: 156, dateGroup: "5월 15일", time: "18:10:00", title: "우리카드결제대금", amount: -1150000, balance: 0 },
+  { id: 157, dateGroup: "5월 14일", time: "19:00:00", title: "카카오T", amount: -9800, balance: 0 },
+  { id: 158, dateGroup: "5월 12일", time: "23:10:00", title: "서면 춘장 이자카야", amount: -68000, balance: 0 }, // 유흥비 추가 (서면 이자카야)
+  { id: 159, dateGroup: "5월 12일", time: "13:40:00", title: "토스증권(투자)", amount: -1000000, balance: 0 },
+  { id: 160, dateGroup: "5월 11일", time: "12:30:00", title: "이준호", amount: 30000, balance: 0 },
+  { id: 161, dateGroup: "5월 10일", time: "18:50:30", title: "쿠팡페이", amount: -28000, balance: 0 },
+  { id: 162, dateGroup: "5월 08일", time: "19:22:15", title: "올리브영 대연점", amount: -45000, balance: 0 },
+  { id: 163, dateGroup: "5월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 164, dateGroup: "5월 03일", time: "14:20:00", title: "해외 마이프로틴", amount: -85000, balance: 0 },
+  { id: 165, dateGroup: "5월 01일", time: "12:40:00", title: "스타벅스 수영점", amount: -5000, balance: 0 },
+
+  // 4월 (총 25개)
+  { id: 166, dateGroup: "4월 30일", time: "18:50:30", title: "쿠팡", amount: -24000, balance: 0 },
+  { id: 167, dateGroup: "4월 28일", time: "15:30:00", title: "교보문고", amount: -31400, balance: 0 },
+  { id: 168, dateGroup: "4월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 169, dateGroup: "4월 26일", time: "15:00:00", title: "토스증권(입금)", amount: 250000, balance: 0 },
+  { id: 170, dateGroup: "4월 25일", time: "12:30:00", title: "CU 편의점 경대점", amount: -4200, balance: 0 },
+  { id: 171, dateGroup: "4월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 172, dateGroup: "4월 25일", time: "09:30:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 173, dateGroup: "4월 23일", time: "18:15:00", title: "CGV 광안점", amount: -14000, balance: 0 },
+  { id: 174, dateGroup: "4월 21일", time: "19:40:00", title: "네이버페이결제", amount: -42000, balance: 0 },
+  { id: 175, dateGroup: "4월 20일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 176, dateGroup: "4월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 177, dateGroup: "4월 16일", time: "23:40:00", title: "동래 한양족발", amount: -54000, balance: 0 }, // 유흥비 추가 (동래 술자리)
+  { id: 178, dateGroup: "4월 16일", time: "08:20:00", title: "메가커피 대연점", amount: -3500, balance: 0 },
+  { id: 179, dateGroup: "4월 15일", time: "18:05:10", title: "우리카드결제대금", amount: -850000, balance: 0 },
+  { id: 180, dateGroup: "4월 13일", time: "18:30:00", title: "쿠팡페이", amount: -28000, balance: 0 },
+  { id: 181, dateGroup: "4월 12일", time: "14:20:05", title: "해외 iHerb", amount: -65400, balance: 0 },
+  { id: 182, dateGroup: "4월 11일", time: "12:45:00", title: "Booklive", amount: -15000, balance: 0 },
+  { id: 183, dateGroup: "4월 09일", time: "19:15:22", title: "돼지국밥 서면점", amount: -18000, balance: 0 },
+  { id: 184, dateGroup: "4월 08일", time: "20:10:00", title: "쿠팡 환불", amount: 12500, balance: 0 },
+  { id: 185, dateGroup: "4월 06일", time: "13:40:00", title: "토스증권(투자)", amount: -1500000, balance: 0 },
+  { id: 186, dateGroup: "4월 05일", time: "23:10:00", title: "동래 두더지점빵", amount: -35000, balance: 0 }, // 유흥비 추가 (동래 와인/맥주)
+  { id: 187, dateGroup: "4월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 188, dateGroup: "4월 04일", time: "18:00:00", title: "김민수", amount: 15000, balance: 0 },
+  { id: 189, dateGroup: "4월 02일", time: "12:20:00", title: "올리브영 광안점", amount: -32000, balance: 0 },
+  { id: 190, dateGroup: "4월 01일", time: "19:05:00", title: "카카오T", amount: -11500, balance: 0 },
+
+  // 3월 (총 23개)
+  { id: 191, dateGroup: "3월 31일", time: "08:45:12", title: "GS25 수영점", amount: -4200, balance: 0 },
+  { id: 192, dateGroup: "3월 30일", time: "15:20:00", title: "당근마켓 입금", amount: 35000, balance: 0 },
+  { id: 193, dateGroup: "3월 29일", time: "19:15:22", title: "부산밀면 경대점", amount: -18000, balance: 0 },
+  { id: 194, dateGroup: "3월 28일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 195, dateGroup: "3월 27일", time: "12:30:00", title: "스타벅스 대연점", amount: -5000, balance: 0 },
+  { id: 196, dateGroup: "3월 26일", time: "18:45:00", title: "쿠팡페이", amount: -24000, balance: 0 },
+  { id: 197, dateGroup: "3월 25일", time: "14:30:00", title: "DMM 포인트 결제", amount: -25000, balance: 0 },
+  { id: 198, dateGroup: "3월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 199, dateGroup: "3월 25일", time: "09:30:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 200, dateGroup: "3월 24일", time: "18:30:00", title: "쿠팡", amount: -27000, balance: 0 },
+  { id: 201, dateGroup: "3월 22일", time: "23:50:00", title: "부산대 썰스데이파티(Thursday Party)", amount: -24000, balance: 0 }, // 유흥비 추가 (부산대 펍)
+  { id: 202, dateGroup: "3월 22일", time: "12:45:00", title: "토스증권(투자)", amount: -500000, balance: 0 },
+  { id: 203, dateGroup: "3월 20일", time: "21:10:15", title: "카카오T", amount: -8500, balance: 0 },
+  { id: 204, dateGroup: "3월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 205, dateGroup: "3월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 206, dateGroup: "3월 15일", time: "18:05:00", title: "우리카가결제대금", amount: -950000, balance: 0 },
+  { id: 207, dateGroup: "3월 11일", time: "14:20:00", title: "해외 iHerb", amount: -72000, balance: 0 },
+  { id: 208, dateGroup: "3월 09일", time: "19:15:00", title: "쿠팡", amount: -45000, balance: 0 },
+  { id: 209, dateGroup: "3월 07일", time: "22:40:00", title: "부산대 텐텐동전노래연습장", amount: -6000, balance: 0 }, // 유흥비 추가 (노래방)
+  { id: 210, dateGroup: "3월 07일", time: "12:30:00", title: "스타벅스 서면점", amount: -5000, balance: 0 },
+  { id: 211, dateGroup: "3월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 212, dateGroup: "3월 03일", time: "18:45:00", title: "교촌치킨 수영점", amount: -23000, balance: 0 },
+  { id: 213, dateGroup: "3월 01일", time: "15:20:00", title: "Booklive", amount: -12000, balance: 0 },
+
+  // 2월 (총 23개)
+  { id: 214, dateGroup: "2월 28일", time: "19:30:00", title: "쿠팡페이", amount: -25000, balance: 0 },
+  { id: 215, dateGroup: "2월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 216, dateGroup: "2월 25일", time: "09:30:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 217, dateGroup: "2월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 218, dateGroup: "2월 23일", time: "12:15:00", title: "올리브영 경대점", amount: -28000, balance: 0 },
+  { id: 219, dateGroup: "2월 21일", time: "14:30:00", title: "스타벅스 수영점", amount: -12000, balance: 0 },
+  { id: 220, dateGroup: "2월 21일", time: "12:00:00", title: "황남빵 대연점", amount: -24000, balance: 0 },
+  { id: 221, dateGroup: "2월 20일", time: "19:00:00", title: "식당석식 광안점", amount: -35000, balance: 0 },
+  { id: 222, dateGroup: "2월 20일", time: "15:30:00", title: "카카오T", amount: -11200, balance: 0 },
+  { id: 223, dateGroup: "2월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 224, dateGroup: "2월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 225, dateGroup: "2월 15일", time: "23:50:00", title: "남포동 할매집", amount: -45000, balance: 0 }, // 유흥비 추가 (남포동 노포 대선소주)
+  { id: 226, dateGroup: "2월 15일", time: "18:10:00", title: "우리카드결제대금", amount: -1120000, balance: 0 },
+  { id: 227, dateGroup: "2월 14일", time: "19:20:00", title: "쿠팡페이", amount: -32000, balance: 0 },
+  { id: 228, dateGroup: "2월 12일", time: "14:10:00", title: "해외 마이프로틴", amount: -95000, balance: 0 },
+  { id: 229, dateGroup: "2월 10일", time: "19:40:00", title: "쿠팡", amount: -52000, balance: 0 },
+  { id: 230, dateGroup: "2월 08일", time: "13:20:00", title: "토스증권(투자)", amount: -500000, balance: 0 },
+  { id: 231, dateGroup: "2월 07일", time: "22:30:00", title: "남포동 쓰리몽키즈", amount: -34000, balance: 0 }, // 유흥비 추가 (남포동 맥주집)
+  { id: 232, dateGroup: "2월 07일", time: "12:30:00", title: "CU 대연점", amount: -4500, balance: 0 },
+  { id: 233, dateGroup: "2월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 234, dateGroup: "2월 03일", time: "18:30:00", title: "최지훈", amount: 20000, balance: 0 },
+  { id: 235, dateGroup: "2월 02일", time: "12:45:00", title: "메가커피 광안점", amount: -3000, balance: 0 },
+  { id: 236, dateGroup: "2월 01일", time: "19:10:00", title: "쿠팡", amount: -22000, balance: 0 },
+
+  // 1월 (총 26개)
+  { id: 237, dateGroup: "1월 30일", time: "15:00:00", title: "당근마켓 입금", amount: 45000, balance: 0 },
+  { id: 238, dateGroup: "1월 28일", time: "19:30:00", title: "네이버페이결제", amount: -34000, balance: 0 },
+  { id: 239, dateGroup: "1월 27일", time: "09:30:00", title: "DB손해보험", amount: -85000, balance: 0 },
+  { id: 240, dateGroup: "1월 25일", time: "12:15:00", title: "맥도날드 서면점", amount: -8500, balance: 0 },
+  { id: 241, dateGroup: "1월 25일", time: "10:00:00", title: "우리첫거래적금2", amount: -500000, balance: 0 },
+  { id: 242, dateGroup: "1월 25일", time: "09:30:00", title: "삼성증권(대체)", amount: -1000000, balance: 0 },
+  { id: 243, dateGroup: "1월 24일", time: "18:50:00", title: "무신사", amount: -79000, balance: 0 },
+  { id: 244, dateGroup: "1월 23일", time: "23:50:00", title: "서면 구월말숙", amount: -52000, balance: 0 }, // 유흥비 추가 (서면 핫플 술집)
+  { id: 245, dateGroup: "1월 22일", time: "21:10:05", title: "쿠팡", amount: -45000, balance: 0 },
+  { id: 246, dateGroup: "1월 20일", time: "23:45:10", title: "카카오T", amount: -9800, balance: 0 },
+  { id: 247, dateGroup: "1월 18일", time: "22:15:45", title: "해외 Patreon", amount: -15000, balance: 0 },
+  { id: 248, dateGroup: "1월 18일", time: "10:11:33", title: "U+알뜰모바일", amount: -33000, balance: 0 },
+  { id: 249, dateGroup: "1월 16일", time: "12:30:00", title: "스타벅스 경대점", amount: -5000, balance: 0 },
+  { id: 250, dateGroup: "1월 15일", time: "18:05:22", title: "우리카드결제대금", amount: -1250000, balance: 0 },
+  { id: 251, dateGroup: "1월 14일", time: "19:00:00", title: "쿠팡페이", amount: -28000, balance: 0 },
+  { id: 252, dateGroup: "1월 12일", time: "14:20:05", title: "해외 iHerb", amount: -68000, balance: 0 },
+  { id: 253, dateGroup: "1월 10일", time: "22:40:00", title: "서면 통통동전노래연습장", amount: -7000, balance: 0 }, // 유흥비 추가 (노래방)
+  { id: 254, dateGroup: "1월 09일", time: "18:15:00", title: "CGV 서면점", amount: -14000, balance: 0 },
+  { id: 255, dateGroup: "1월 07일", time: "12:40:11", title: "Booklive", amount: -18000, balance: 0 },
+  { id: 256, dateGroup: "1월 06일", time: "08:45:12", title: "GS25 광안점", amount: -5200, balance: 0 },
+  { id: 257, dateGroup: "1월 05일", time: "09:00:00", title: "콤비(주) 급여", amount: 3784210, balance: 0 },
+  { id: 258, dateGroup: "1월 04일", time: "19:15:22", title: "돼지국밥 대연점", amount: -16000, balance: 0 },
+  { id: 259, dateGroup: "1월 03일", time: "12:00:00", title: "파리바게뜨 수영점", amount: -12000, balance: 0 },
+  { id: 260, dateGroup: "1월 02일", time: "18:40:00", title: "쿠팡", amount: -25000, balance: 0 },
+  { id: 261, dateGroup: "1월 01일", time: "13:20:00", title: "스타벅스 대연점", amount: -10000, balance: 0 },
+  { id: 262, dateGroup: "1월 01일", time: "10:00:00", title: "초기잔액이관", amount: 0, balance: 0 }
 ];
         
         let transactions = [];
@@ -1053,59 +1192,33 @@
             timeouts.push(t4);
         }
 
-window.addEventListener('DOMContentLoaded', () => {
-    const storedData = localStorage.getItem('won_banking_transactions_v13');
-    
-    let forceReload = true;
-    if (storedData) {
-        transactions = JSON.parse(storedData);
-        forceReload = false;
-    }
+        window.addEventListener('DOMContentLoaded', () => {
+            const storedData = localStorage.getItem('won_banking_transactions_v14');
+            
+            let forceReload = true;
+            if (storedData) {
+                transactions = JSON.parse(storedData);
+                forceReload = false;
+            }
 
-    if (forceReload) {
-        transactions = [...defaultTransactions];
-    }
-    
-    recalculateAllBalances();
-    saveToLocalStorage();
+            if (forceReload) {
+                transactions = [...defaultTransactions];
+            }
+            
+            recalculateAllBalances();
+            saveToLocalStorage();
 
-    // 💡 앱 실행 시마다 조회기간을 "오늘 날짜 ~ 오늘로부터 3개월 전"으로 자동 반영
-    const todayDate = new Date();
-    const startDate3M = new Date(todayDate.getFullYear(), todayDate.getMonth() - 3, todayDate.getDate());
-    const autoFilterValue = `${formatDateForFilter(startDate3M)} ~ ${formatDateForFilter(todayDate)}`;
-    document.getElementById('filter-date-input').value = autoFilterValue;
-    localStorage.setItem('won_banking_date_filter', autoFilterValue);
-    parseFilterRange();
+            // 💡 앱 실행 시마다 조회기간을 "오늘 날짜 ~ 오늘로부터 3개월 전"으로 자동 반영
+            const todayDate = new Date();
+            const startDate3M = new Date(todayDate.getFullYear(), todayDate.getMonth() - 3, todayDate.getDate());
+            const autoFilterValue = `${formatDateForFilter(startDate3M)} ~ ${formatDateForFilter(todayDate)}`;
+            document.getElementById('filter-date-input').value = autoFilterValue;
+            localStorage.setItem('won_banking_date_filter', autoFilterValue);
+            parseFilterRange();
 
-    renderTransactions();
-
-    // ================= [새로운 실행 순서 제어 영역] =================
-    const splash = document.getElementById("splash-screen");
-    const main = document.getElementById("main-screen");
-
-    // 1. [앱 실행] 직후 로딩 화면을 부드럽게 확대하며 활성화 (0.5초 소요)
-    setTimeout(() => {
-        splash.classList.add("active");
-    }, 50);
-
-    // 2. [로딩 화면이 완전히 뜬 후] Face ID 애니메이션을 로딩 화면 위에서 시작
-    // 스플래시 애니메이션 시간(500ms)이 끝나는 시점에 맞추어 Face ID 실행
-    setTimeout(() => { 
-        startFaceIDSequence(); 
-    }, 550);
-
-    // 💡 참고: 기존에 FaceID가 완료되면 스플래시를 지우는 기능이 연동되도록, 
-    // Face ID 완료 후 메인화면이 효과 없이 바로 뜰 수 있게 브릿지를 잡아둡니다.
-    // (기존 코드의 startFaceIDSequence 내부나 혹은 인증 완료 시점에 splash hidden 처리가 되어있다면 자연스럽게 이어집니다.)
-    // 만약 Face ID 이후 화면 전환 타이밍을 강제로 잡아야 한다면 아래 주석을 해제하여 조절할 수 있습니다.
-    /*
-    setTimeout(() => {
-        splash.classList.add("hidden");
-        main.classList.remove("hidden");
-    }, 2500); 
-    */
-    // ====================================================================
-});
+            renderTransactions();
+            setTimeout(() => { startFaceIDSequence(); }, 500);
+        });
 
         // 💡 브라우저/앱 종료 시 조회기간을 "끝 날짜 기준 3개월" 범위로 되돌려 저장
         window.addEventListener('beforeunload', () => {
@@ -1143,7 +1256,7 @@ window.addEventListener('pageshow', (event) => {
 
 // 💡 2. 로컬 스토리지에 트랜잭션 데이터 저장
 function saveToLocalStorage() {
-    localStorage.setItem('won_banking_transactions_v13', JSON.stringify(transactions));
+    localStorage.setItem('won_banking_transactions_v14', JSON.stringify(transactions));
 }
 
 // 💡 3. 선택 완료된 날짜 필터 저장 및 데이터 재필터링
